@@ -5,6 +5,7 @@ import {
   useCallback,
   useState,
   useEffect,
+  useRef,
 } from "react";
 import styled from "styled-components";
 import { v4 as uuidv4 } from "uuid";
@@ -48,11 +49,14 @@ interface InputFieldContainerProps {
   validationList: string[];
 }
 
+const selection = document.getSelection();
+
 const InputFieldContainer = ({
   value,
   setValue,
   validationList,
 }: InputFieldContainerProps) => {
+  const divRef = useRef<HTMLDivElement>(null);
   const [cursorPos, setCursorPos] = useState<ItemCursorPosition | null>(null);
 
   const setElementValue = useCallback(
@@ -75,7 +79,7 @@ const InputFieldContainer = ({
   );
 
   useEffect(() => {
-    if (value[value.length - 1].type === "tag") {
+    if (value.length > 0 && value[value.length - 1].type === "tag") {
       setValue((_value) =>
         _value.concat({
           type: "text",
@@ -97,7 +101,22 @@ const InputFieldContainer = ({
         validationList,
       }}
     >
-      <InputBackground>
+      <InputBackground
+        ref={divRef}
+        onClick={(e) => {
+          /**
+           * When no child is selected,
+           * Set the selected to the last element cursor
+           */
+          if (e.target === divRef.current) {
+            setCursorPos({
+              id: value[value.length - 1].id,
+              node: selection?.focusNode ?? null,
+              position: selection?.anchorOffset || 0,
+            });
+          }
+        }}
+      >
         <InputField />
       </InputBackground>
     </Provider>
