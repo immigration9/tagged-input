@@ -2,13 +2,13 @@ import { useContext } from "react";
 import styled from "styled-components";
 
 import { TagItem } from "../types/input";
+import { tagVisualize } from "../utils/tag";
 import { InputFieldContext } from "./InputFieldContainer";
 
-const TagStyle = styled.div<{ isDragging?: boolean }>`
-  opacity: ${({ isDragging }) => (isDragging ? 0.5 : 1)};
+const TagStyle = styled.div<{ isValid: boolean }>`
   padding: 0 8px;
   margin: 0 4px;
-  background-color: orange;
+  background-color: ${({ isValid }) => (isValid ? "orange" : "red")};
   color: white;
   font-weight: bold;
   cursor: move;
@@ -17,19 +17,12 @@ const TagStyle = styled.div<{ isDragging?: boolean }>`
   display: inline-block;
 `;
 
-function tagVisualize(tagText: string) {
-  return tagText.replace("#", "").replace("{", "").replace("}", "");
-}
-
 const Tag = ({ element }: { element: TagItem }) => {
   const { setElementValue } = useContext(InputFieldContext);
 
   return (
-    <TagStyle>
-      <div
-        contentEditable="false"
-        onClick={() => setElementValue(element.id, { removed: true })}
-      >
+    <TagStyle isValid={element.valid}>
+      <div onClick={() => setElementValue(element.id, { removed: true })}>
         {tagVisualize(element.text)} X
       </div>
     </TagStyle>

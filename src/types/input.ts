@@ -28,4 +28,5 @@ export type InputContextProps = {
   setElementValue: (id: string, payload: Partial<TagItem>) => void;
   cursorPos: ItemCursorPosition | null;
   setCursorPos: Dispatch<SetStateAction<ItemCursorPosition | null>>;
+  validationList: string[];
 };

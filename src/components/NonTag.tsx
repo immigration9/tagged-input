@@ -6,51 +6,42 @@ import {
   useEffect,
 } from "react";
 import styled from "styled-components";
-import { v4 as uuidv4 } from "uuid";
 
 import { InputElementType, NonTagItem } from "../types/input";
+import { splitCreateTag } from "../utils/tag";
 import { InputFieldContext } from "./InputFieldContainer";
 
 const NonTagStyled = styled.div`
   display: inline-block;
   min-width: 1px;
   outline: none;
+  /** 
+   * Without this option,
+   * 
+   */
+  white-space: pre;
 `;
 
 const matcher = /[a-zA-z0-9]*#{[a-zA-z0-9]+}[a-zA-z0-9]*/;
-
-function splitItem(text: string): InputElementType {
-  const pre = text.slice(0, text.indexOf("#"));
-  const post = text.slice(text.indexOf("}") + 1);
-  const tag = text.slice(text.indexOf("#"), text.indexOf("}") + 1);
-
-  return [
-    { type: "text", id: uuidv4(), text: pre },
-    {
-      type: "tag",
-      id: uuidv4(),
-      text: tag,
-      removed: false,
-      valid: true,
-    },
-    { type: "text", id: uuidv4(), text: post },
-  ];
-}
 
 const selection = document.getSelection();
 
 const NonTag = ({ element }: { element: NonTagItem }) => {
   const divRef = useRef<HTMLDivElement>(null);
-  const { setValue, setElementValue, cursorPos, setCursorPos } = useContext(
-    InputFieldContext
-  );
+  const {
+    setValue,
+    setElementValue,
+    cursorPos,
+    setCursorPos,
+    validationList,
+  } = useContext(InputFieldContext);
 
   useEffect(() => {
     if (element.text.match(matcher)) {
       setValue((_value) =>
         _value.reduce<InputElementType>((acc, cur) => {
           if (element.id === cur.id) {
-            const splitted = splitItem(cur.text);
+            const splitted = splitCreateTag(cur.text, validationList);
             setCursorPos({
               id: splitted[2].id,
               node: selection?.focusNode ?? null,
@@ -62,7 +53,7 @@ const NonTag = ({ element }: { element: NonTagItem }) => {
         }, [])
       );
     }
-  }, [element, setValue, setCursorPos]);
+  }, [element, setValue, setCursorPos, validationList]);
 
   useLayoutEffect(() => {
     if (divRef.current && cursorPos && cursorPos.id === element.id) {

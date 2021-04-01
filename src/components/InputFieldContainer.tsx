@@ -4,8 +4,10 @@ import {
   SetStateAction,
   useCallback,
   useState,
+  useEffect,
 } from "react";
 import styled from "styled-components";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   InputContextProps,
@@ -35,6 +37,7 @@ export const InputFieldContext = createContext<InputContextProps>({
   setElementValue: (id: string, payload: Partial<TagItem>) => {},
   cursorPos: null,
   setCursorPos: (_value: SetStateAction<ItemCursorPosition | null>) => {},
+  validationList: [],
 });
 
 const { Provider } = InputFieldContext;
@@ -42,9 +45,14 @@ const { Provider } = InputFieldContext;
 interface InputFieldContainerProps {
   value: InputElementType;
   setValue: Dispatch<SetStateAction<InputElementType>>;
+  validationList: string[];
 }
 
-const InputFieldContainer = ({ value, setValue }: InputFieldContainerProps) => {
+const InputFieldContainer = ({
+  value,
+  setValue,
+  validationList,
+}: InputFieldContainerProps) => {
   const [cursorPos, setCursorPos] = useState<ItemCursorPosition | null>(null);
 
   const setElementValue = useCallback(
@@ -66,6 +74,18 @@ const InputFieldContainer = ({ value, setValue }: InputFieldContainerProps) => {
     [setValue]
   );
 
+  useEffect(() => {
+    if (value[value.length - 1].type === "tag") {
+      setValue((_value) =>
+        _value.concat({
+          type: "text",
+          id: uuidv4(),
+          text: "",
+        })
+      );
+    }
+  }, [value, setValue]);
+
   return (
     <Provider
       value={{
@@ -74,6 +94,7 @@ const InputFieldContainer = ({ value, setValue }: InputFieldContainerProps) => {
         setElementValue,
         cursorPos,
         setCursorPos,
+        validationList,
       }}
     >
       <InputBackground>
